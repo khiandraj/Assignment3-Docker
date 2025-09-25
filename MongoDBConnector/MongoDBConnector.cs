@@ -1,16 +1,17 @@
 ﻿using MongoDB.Driver;
+using MongoDB.Bson;
 
 namespace MongoDBConnector;
 
-public class Class1
+public class MongoDBConnector
 {
+    private readonly MongoClient _client; 
 
-    private readonly MongoClient_client; 
-
-    public MongoDBConnector (string connectionString){
+    public MongoDBConnector (string connectionString)
+    {
         _client = new MongoClient(connectionString); 
     }
-}
+
 public bool Ping()
 {
     try
@@ -23,5 +24,6 @@ public bool Ping()
     catch
     {
         return false;
+    }
     }
 }
