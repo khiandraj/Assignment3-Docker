@@ -1,7 +1,6 @@
 ﻿using Xunit;
 using MongoDBConnector;
-using DotNet.Testcontainers.Builders;
-using DotNet.Testcontainers.Containers;
+using Testcontainers.MongoDb;
 
 
 namespace MongoDBConnector.Tests;
@@ -9,23 +8,18 @@ namespace MongoDBConnector.Tests;
 
 public class MongoDBConnectorTests : IAsyncLifetime
 {
-    private readonly TestcontainersContainer _mongoContainer;
-    private string _connectionString = string.Empty;
+    private readonly MongoDbContainer _mongoContainer;
 
     public MongoDBConnectorTests()
     {
-        _mongoContainer = new TestcontainersBuilder<TestcontainersContainer>()
-            .WithImage("mongo:6.0")
-            .WithPortBinding(27017, true)
-            .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(27017))
+        _mongoContainer = new MongoDbBuilder()
+            .WithImage("mongo:7.0")
             .Build();
     }
 
     public async Task InitializeAsync()
     {
         await _mongoContainer.StartAsync();
-        var port = _mongoContainer.GetMappedPublicPort(27017);
-        _connectionString = $"mongodb://localhost:{port}";
     }
 
     public async Task DisposeAsync()
@@ -34,15 +28,15 @@ public class MongoDBConnectorTests : IAsyncLifetime
     }
 
     [Fact]
-    public void Ping_ShouldReturnTrue_WhenMongoIsRunning()
+    public async Task Ping_ShouldReturnTrue_WhenMongoIsRunning()
     {
-        var connector = new MongoDBConnector(_connectionString);
+        var connector = new MongoDBConnector(_mongoContainer.GetConnectionString());
         Assert.True(connector.Ping());
     }
 
 
     [Fact]
-public void Ping_ShouldReturnFalse_WhenMongoIsNotAvailable()
+public async Task Ping_ShouldReturnFalse_WhenMongoIsNotAvailable()
 {
     var connector = new MongoDBConnector("mongodb://localhost:12345");
     Assert.False(connector.Ping());
